@@ -34,18 +34,19 @@ def import_users(db_name, user_file):
                         prev_line = None
                         row = match.groupdict()
                     else:
-                        print('invalid line: %d:"%s"' % (cur_line, line))
-                        if prev_line is not None:
-                            line = prev_line + line
-                            match = split_re.match(line)
-                            if match:
-                                prev_line = None
-                                row = match.groupdict()
-                                print('fixed line: %d:"%s"' % (cur_line, line))
+                        if line is not None and line != '':
+                            print('invalid line: %d:"%s"' % (cur_line, line))
+                            if prev_line is not None:
+                                line = prev_line + line
+                                match = split_re.match(line)
+                                if match:
+                                    prev_line = None
+                                    row = match.groupdict()
+                                    print('fixed line: %d:"%s"' % (cur_line, line))
+                                else:
+                                    print('invalid line2: %d:"%s"' % (cur_line, line))
                             else:
-                                print('invalid line2: %d:"%s"' % (cur_line, line))
-                        else:
-                            prev_line = line
+                                prev_line = line
                     if row is not None:
                         cur.execute(insert_query, row)
                     if (cur_line % 10000) == 0:

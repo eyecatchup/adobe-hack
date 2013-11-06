@@ -5,6 +5,7 @@ from contextlib import closing
 import sqlite3
 import time
 import re
+import base64
 
 
 SPLIT_RE = '^(?P<uniqueid>.*)\-\|\-(?P<field_2>.*)\-\|\-(?P<email>.*)\-\|\-(?P<hash>.*)\-\|\-(?P<hint>.*)\|\-(?P<field_6>.*)\-$'
@@ -48,8 +49,10 @@ def import_users(db_name, user_file):
                             else:
                                 prev_line = line
                     if row is not None:
+                        if row['hash']:
+                            row['hash'] = buffer(base64.b64decode(row['hash']))
                         cur.execute(insert_query, row)
-                    if (cur_line % 10000) == 0:
+                    if (cur_line % 100000) == 0:
                         print(cur_line)
     print('Lines imported: %d' % cur_line)
     print('Done in %.2f seconds' % (time.time() - totaltime))

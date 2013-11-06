@@ -1,0 +1,91 @@
+# file backups
+*.bak
+
+
+## Windows
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+
+## OSX
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+
+# Thumbnails
+._*
+
+# Files that might appear on external disk
+.Spotlight-V100
+.Trashes
+
+
+## Linux
+.*
+!.git*
+*~
+
+
+### CVS
+/CVS/*
+*/CVS/*
+.cvsignore
+*/.cvsignore
+
+
+## SVN
+.svn/
+
+
+## Mercurial
+/.hg/*
+*/.hg/*
+.hgignore
+
+
+## vim
+*.s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+*~
+
+
+## Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+.elc
+auto-save-list
+tramp
+.\#*
+
+
+## IntelliJ
+*.iml
+*.ipr
+*.iws
+.idea/
+
+
+## Pycharm
+.idea
+.iml
+
+
+## Python
+*.py[cod]
+*.so
+__pycache__
+
+
+# adobe_hack

@@ -1,0 +1,14 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# bat/shell files
+*.bat text eol=crlf
+*.BAT text eol=crlf
+*.cmd text eol=crlf
+*.CMD text eol=crlf
+*.vbs text eol=crlf
+*.wsf text eol=crlf
+*.sh text eol=lf
+
+# source
+*.py text

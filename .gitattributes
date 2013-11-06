@@ -12,3 +12,4 @@
 
 # source
 *.py text
+*.sql text

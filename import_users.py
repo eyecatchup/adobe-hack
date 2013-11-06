@@ -20,24 +20,37 @@ def import_users(db_name, user_file):
         VALUES (:uniqueid, :field_2, :email, :hash, :hint, :field_6)
     """
 
-    db_con = sqlite3.connect(db_name)
-
-    with db_con:
+    with sqlite3.connect(db_name) as db_con:
         with closing(db_con.cursor()) as cur:
             with open(user_file, 'r') as users:
                 cur_line = 0
+                prev_line = None
                 for line in users:
                     cur_line += 1
                     line = line.strip()
+                    row = None
                     match = split_re.match(line)
                     if match:
+                        prev_line = None
                         row = match.groupdict()
-                        cur.execute(insert_query, row)
-                        if (cur_line % 1000) == 0:
-                            print(cur_line)
                     else:
                         print('invalid line: %d:"%s"' % (cur_line, line))
-                if cur_line % 1000:
+                        if prev_line is not None:
+                            line = prev_line + line
+                            match = split_re.match(line)
+                            if match:
+                                prev_line = None
+                                row = match.groupdict()
+                                print('fixed line: %d:"%s"' % (cur_line, line))
+                            else:
+                                print('invalid line2: %d:"%s"' % (cur_line, line))
+                        else:
+                            prev_line = line
+                    if row is not None:
+                        cur.execute(insert_query, row)
+                    if (cur_line % 10000) == 0:
+                        print(cur_line)
+                if cur_line % 10000:
                     print(cur_line)
 
     print('> Done in %.2f seconds' % (time.time() - totaltime))

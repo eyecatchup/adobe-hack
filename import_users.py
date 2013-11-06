@@ -27,7 +27,7 @@ def import_users(db_name, user_file):
                 prev_line = None
                 for line in users:
                     cur_line += 1
-                    line = line.strip()
+                    line = line.rstrip("\r\n")
                     row = None
                     match = split_re.match(line)
                     if match:
@@ -35,26 +35,24 @@ def import_users(db_name, user_file):
                         row = match.groupdict()
                     else:
                         if line is not None and line != '':
-                            print('invalid line: %d:"%s"' % (cur_line, line))
+                            print('invalid: %d:"%s"' % (cur_line, line))
                             if prev_line is not None:
                                 line = prev_line + line
                                 match = split_re.match(line)
                                 if match:
                                     prev_line = None
                                     row = match.groupdict()
-                                    print('fixed line: %d:"%s"' % (cur_line, line))
+                                    print('fixed: "%s"' % line)
                                 else:
-                                    print('invalid line2: %d:"%s"' % (cur_line, line))
+                                    print('invalid: "%s"' % line)
                             else:
                                 prev_line = line
                     if row is not None:
                         cur.execute(insert_query, row)
                     if (cur_line % 10000) == 0:
                         print(cur_line)
-                if cur_line % 10000:
-                    print(cur_line)
-
-    print('> Done in %.2f seconds' % (time.time() - totaltime))
+    print('Lines imported: %d' % cur_line)
+    print('Done in %.2f seconds' % (time.time() - totaltime))
 
 
 def main():

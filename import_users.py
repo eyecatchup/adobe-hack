@@ -6,6 +6,7 @@ import sqlite3
 import time
 import re
 import base64
+import binascii
 
 
 SPLIT_RE = '^(?P<uniqueid>.*)\-\|\-(?P<field_2>.*)\-\|\-(?P<email>.*)\-\|\-(?P<hash>.*)\-\|\-(?P<hint>.*)\|\-(?P<field_6>.*)\-$'
@@ -36,21 +37,27 @@ def import_users(db_name, user_file):
                         row = match.groupdict()
                     else:
                         if line is not None and line != '':
-                            print('invalid: %d:"%s"' % (cur_line, line))
+                            print('invalid: %d:%s' % (cur_line, line))
                             if prev_line is not None:
                                 line = prev_line + line
                                 match = split_re.match(line)
                                 if match:
                                     prev_line = None
                                     row = match.groupdict()
-                                    print('fixed: "%s"' % line)
+                                    print('fixed: %s' % line)
                                 else:
-                                    print('invalid: "%s"' % line)
+                                    prev_line = line
                             else:
                                 prev_line = line
                     if row is not None:
                         if row['hash']:
-                            row['hash'] = buffer(base64.b64decode(row['hash']))
+                            try:
+                                row['hash'] = buffer(base64.b64decode(row['hash']))
+                            except (binascii.Error, TypeError) as exc:
+                                print('%s: %d:%s' % (exc, cur_line, line))
+                                row['hash'] = None
+                        else:
+                            row['hash'] = None
                         cur.execute(insert_query, row)
                     if (cur_line % 100000) == 0:
                         print(cur_line)

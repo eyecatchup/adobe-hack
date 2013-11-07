@@ -9,7 +9,7 @@ import base64
 import binascii
 
 
-SPLIT_RE = '^(?P<uniqueid>.*)\-\|\-(?P<field_2>.*)\-\|\-(?P<email>.*)\-\|\-(?P<hash>.*)\-\|\-(?P<hint>.*)\|\-(?P<field_6>.*)\-$'
+SPLIT_RE = '^(?P<userid>\d+?)\-\|\-(?P<username>.*?)\-\|\-(?P<email>.+?)\-\|\-(?P<hash>.*?)\-\|\-(?P<hint>.*)\|\-\-$'
 
 
 def import_users(db_name, user_file):
@@ -18,8 +18,8 @@ def import_users(db_name, user_file):
     split_re = re.compile(SPLIT_RE)
 
     insert_query = """
-        INSERT INTO users (uniqueid, field_2, email, hash, hint, field_6)
-        VALUES (:uniqueid, :field_2, :email, :hash, :hint, :field_6)
+        INSERT INTO users (userid, username, email, hash, hint)
+        VALUES (:userid, :username, :email, :hash, :hint)
     """
 
     with sqlite3.connect(db_name) as db_con:
@@ -50,6 +50,8 @@ def import_users(db_name, user_file):
                             else:
                                 prev_line = line
                     if row is not None:
+                        if row['username'] == '':
+                            row['username'] = None
                         if row['hash']:
                             try:
                                 row['hash'] = buffer(base64.b64decode(row['hash']))

@@ -31,7 +31,7 @@ def import_sql(db_name, sql_file, force):
     with closing(db_con.cursor()) as cur:
         cur.execute("VACUUM")
 
-    print('> Done in %.2f seconds' % (time.time() - totaltime))
+    print('Done in {:.2f} seconds'.format(time.time() - totaltime))
 
 
 def main():

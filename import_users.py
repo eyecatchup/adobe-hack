@@ -11,8 +11,8 @@ import binascii
 def import_users(db_name, user_file):
     starttime = time.time()
     with sqlite3.connect(db_name) as db_con:
-        for row in parse_file(user_file):
-            db_con.execute('INSERT INTO users (userid, username, email, hash, hint) VALUES (?, ?, ?, ?, ?)', row)
+        db_con.executemany('INSERT INTO users (userid, username, email, hash, hint) VALUES (?, ?, ?, ?, ?)',
+                           parse_file(user_file))
     print('Done in {:.2f} seconds'.format(time.time() - starttime))
 
 

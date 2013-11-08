@@ -50,6 +50,7 @@ def import_users(db_name, user_file):
                             else:
                                 prev_line = line
                     if row is not None:
+                        row = {k: v.strip() for k, v in row.items()}
                         if row['username'] == '':
                             row['username'] = None
                         if row['hash']:

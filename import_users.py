@@ -9,13 +9,10 @@ import base64
 import binascii
 
 
-SPLIT_RE = '^(\d+?)\-\|\-(.*?)\-\|\-(.+?)\-\|\-(.*?)\-\|\-(.*)\|\-\-$'
-
-
 def import_users(db_name, user_file):
     totaltime = time.time()
 
-    split_re = re.compile(SPLIT_RE)
+    split_re = re.compile('^(\d+?)\-\|\-(.*?)\-\|\-(.+?)\-\|\-(.*?)\-\|\-(.*)\|\-\-$')
 
     insert_query = """
         INSERT INTO users (userid, username, email, hash, hint)
@@ -34,7 +31,7 @@ def import_users(db_name, user_file):
                     match = split_re.match(line)
                     if match:
                         prev_line = None
-                        row = match.groups()
+                        row = [v.strip() for v in match.groups()]
                     else:
                         if line is not None and line != '':
                             print('invalid: {}:{}'.format(cur_line, line))
@@ -43,14 +40,13 @@ def import_users(db_name, user_file):
                                 match = split_re.match(line)
                                 if match:
                                     prev_line = None
-                                    row = match.groups()
+                                    row = [v.strip() for v in match.groups()]
                                     print('fixed: {}'.format(line))
                                 else:
                                     prev_line = line
                             else:
                                 prev_line = line
                     if row is not None:
-                        row = [v.strip() for v in row]
                         if row[1] == '':
                             row[1] = None
                         if row[3]:

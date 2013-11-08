@@ -9,7 +9,7 @@ import base64
 import binascii
 
 
-SPLIT_RE = '^(?P<userid>\d+?)\-\|\-(?P<username>.*?)\-\|\-(?P<email>.+?)\-\|\-(?P<hash>.*?)\-\|\-(?P<hint>.*)\|\-\-$'
+SPLIT_RE = '^(\d+?)\-\|\-(.*?)\-\|\-(.+?)\-\|\-(.*?)\-\|\-(.*)\|\-\-$'
 
 
 def import_users(db_name, user_file):
@@ -19,7 +19,7 @@ def import_users(db_name, user_file):
 
     insert_query = """
         INSERT INTO users (userid, username, email, hash, hint)
-        VALUES (:userid, :username, :email, :hash, :hint)
+        VALUES (?, ?, ?, ?, ?)
     """
 
     with sqlite3.connect(db_name) as db_con:
@@ -34,7 +34,7 @@ def import_users(db_name, user_file):
                     match = split_re.match(line)
                     if match:
                         prev_line = None
-                        row = match.groupdict()
+                        row = match.groups()
                     else:
                         if line is not None and line != '':
                             print('invalid: {}:{}'.format(cur_line, line))
@@ -43,24 +43,24 @@ def import_users(db_name, user_file):
                                 match = split_re.match(line)
                                 if match:
                                     prev_line = None
-                                    row = match.groupdict()
+                                    row = match.groups()
                                     print('fixed: {}'.format(line))
                                 else:
                                     prev_line = line
                             else:
                                 prev_line = line
                     if row is not None:
-                        row = {k: v.strip() for k, v in row.items()}
-                        if row['username'] == '':
-                            row['username'] = None
-                        if row['hash']:
+                        row = [v.strip() for v in row]
+                        if row[1] == '':
+                            row[1] = None
+                        if row[3]:
                             try:
-                                row['hash'] = buffer(base64.b64decode(row['hash']))
+                                row[3] = buffer(base64.b64decode(row[3]))
                             except (binascii.Error, TypeError) as exc:
                                 print('{}: {}:{}'.format(exc, cur_line, line))
-                                row['hash'] = None
+                                row[3] = None
                         else:
-                            row['hash'] = None
+                            row[3] = None
                         cur.execute(insert_query, row)
                     if (cur_line % 100000) == 0:
                         print(cur_line)

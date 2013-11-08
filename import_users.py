@@ -12,8 +12,6 @@ import binascii
 def import_users(db_name, user_file):
     totaltime = time.time()
 
-    split_re = re.compile('^(\d+?)\-\|\-(.*?)\-\|\-(.+?)\-\|\-(.*?)\-\|\-(.*)\|\-\-$')
-
     insert_query = """
         INSERT INTO users (userid, username, email, hash, hint)
         VALUES (?, ?, ?, ?, ?)
@@ -21,47 +19,54 @@ def import_users(db_name, user_file):
 
     with sqlite3.connect(db_name) as db_con:
         with closing(db_con.cursor()) as cur:
-            with open(user_file, 'r') as users:
-                cur_line = 0
-                prev_line = None
-                for line in users:
-                    cur_line += 1
-                    line = line.rstrip("\r\n")
-                    row = None
-                    match = split_re.match(line)
-                    if match:
-                        prev_line = None
-                        row = [v.strip() for v in match.groups()]
-                    else:
-                        if line is not None and line != '':
-                            print('invalid: {}:{}'.format(cur_line, line))
-                            if prev_line is not None:
-                                line = prev_line + line
-                                match = split_re.match(line)
-                                if match:
-                                    prev_line = None
-                                    row = [v.strip() for v in match.groups()]
-                                    print('fixed: {}'.format(line))
-                                else:
-                                    prev_line = line
-                            else:
-                                prev_line = line
-                    if row is not None:
-                        if row[1] == '':
-                            row[1] = None
-                        if row[3]:
-                            try:
-                                row[3] = buffer(base64.b64decode(row[3]))
-                            except (binascii.Error, TypeError) as exc:
-                                print('{}: {}:{}'.format(exc, cur_line, line))
-                                row[3] = None
-                        else:
-                            row[3] = None
-                        cur.execute(insert_query, row)
-                    if (cur_line % 100000) == 0:
-                        print(cur_line)
-    print('Lines imported: {}'.format(cur_line))
+            for row in parse_file(user_file):
+                cur.execute(insert_query, row)
     print('Done in {:.2f} seconds'.format(time.time() - totaltime))
+
+
+def parse_file(user_file):
+    split_re = re.compile('^(\d+?)\-\|\-(.*?)\-\|\-(.+?)\-\|\-(.*?)\-\|\-(.*)\|\-\-$')
+
+    with open(user_file, 'r') as users:
+        cur_line = 0
+        prev_line = None
+        for line in users:
+            cur_line += 1
+            line = line.rstrip("\r\n")
+            row = None
+            match = split_re.match(line)
+            if match:
+                prev_line = None
+                row = [v.strip() for v in match.groups()]
+            else:
+                if line is not None and line != '':
+                    print('invalid: {}:{}'.format(cur_line, line))
+                    if prev_line is not None:
+                        line = prev_line + line
+                        match = split_re.match(line)
+                        if match:
+                            prev_line = None
+                            row = [v.strip() for v in match.groups()]
+                            print('fixed: {}'.format(line))
+                        else:
+                            prev_line = line
+                    else:
+                        prev_line = line
+            if row is not None:
+                if row[1] == '':
+                    row[1] = None
+                if row[3]:
+                    try:
+                        row[3] = buffer(base64.b64decode(row[3]))
+                    except (binascii.Error, TypeError) as exc:
+                        print('{}: {}:{}'.format(exc, cur_line, line))
+                        row[3] = None
+                else:
+                    row[3] = None
+                yield row
+            if (cur_line % 100000) == 0:
+                print(cur_line)
+    print('Lines imported: {}'.format(cur_line))
 
 
 def main():

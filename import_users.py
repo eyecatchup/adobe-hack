@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import argparse
-from contextlib import closing
 import sqlite3
 import time
 import re
@@ -10,18 +9,11 @@ import binascii
 
 
 def import_users(db_name, user_file):
-    totaltime = time.time()
-
-    insert_query = """
-        INSERT INTO users (userid, username, email, hash, hint)
-        VALUES (?, ?, ?, ?, ?)
-    """
-
+    starttime = time.time()
     with sqlite3.connect(db_name) as db_con:
-        with closing(db_con.cursor()) as cur:
-            for row in parse_file(user_file):
-                cur.execute(insert_query, row)
-    print('Done in {:.2f} seconds'.format(time.time() - totaltime))
+        for row in parse_file(user_file):
+            db_con.execute('INSERT INTO users (userid, username, email, hash, hint) VALUES (?, ?, ?, ?, ?)', row)
+    print('Done in {:.2f} seconds'.format(time.time() - starttime))
 
 
 def parse_file(user_file):
